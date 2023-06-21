@@ -1,69 +1,120 @@
 package com.snakegame;
 
-import java.awt.Color;
+import java.awt.*;
+import java.util.Random;
 
-public abstract class Food {
-    private Coordinate coordinate;
+enum FoodType {
+    RED, YELLOW, MAGENTA
+}
+
+/**
+ * The Food class represents the food item in the game.
+ * It has a position, size, color, and type.
+ * The food can be of three types: RED, YELLOW, or MAGENTA.
+ * The position and type of the food are randomly generated.
+ */
+class Food {
+    private Point position;
+    private static final int FOOD_SIZE = 10;
     private Color color;
+    private FoodType type;
 
-    public Food(Coordinate coordinate, Color color) {
-        this.coordinate = coordinate;
-        this.color = color;
+    /**
+     * Constructs a new Food object with a random position and type.
+     *
+     * @param mapWidth  the width of the game map.
+     * @param mapHeight the height of the game map.
+     */
+    public Food(int mapWidth, int mapHeight) {
+        position = generateRandomPosition(mapWidth, mapHeight);
+        type = generateRandomFoodType();
+        setColor();
     }
 
-    public Coordinate getCoordinate() {
-        return coordinate;
+    /**
+     * Generates a random position within the game map.
+     *
+     * @param mapWidth  the width of the game map.
+     * @param mapHeight the height of the game map.
+     * @return a randomly generated Point representing the position.
+     */
+    private Point generateRandomPosition(int mapWidth, int mapHeight) {
+        int x = (int) (Math.random() * (mapWidth - FOOD_SIZE));
+        int y = (int) (Math.random() * (mapHeight - FOOD_SIZE));
+        return new Point(x, y);
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public abstract void move();
-
-    // Other common methods and behaviors for food
-
-    public static class RedFood extends Food {
-        public RedFood(Coordinate coordinate) {
-            super(coordinate, Color.RED);
-        }
-
-        @Override
-        public void move() {
-            // Red food stays in place, so no movement logic needed
-        }
-    }
-
-    public static class YellowFood extends Food {
-        public YellowFood(Coordinate coordinate) {
-            super(coordinate, Color.YELLOW);
-        }
-
-        @Override
-        public void move() {
-            // Yellow food moves in a chaotic manner, implement movement logic here
-        }
-    }
-
-    public static class GreenFood extends Food {
-        public GreenFood(Coordinate coordinate) {
-            super(coordinate, Color.GREEN);
-        }
-
-        @Override
-        public void move() {
-            // Green food prefers to move in lines but turns from time to time, implement movement logic here
+    /**
+     * Sets the color of the food based on its type.
+     */
+    private void setColor() {
+        if (type == FoodType.RED) {
+            color = Color.RED;
+        } else if (type == FoodType.YELLOW) {
+            color = Color.YELLOW;
+        } else if (type == FoodType.MAGENTA) {
+            color = Color.MAGENTA;
+        } else {
+            color = Color.WHITE;
         }
     }
 
-    public static class VioletFood extends Food {
-        public VioletFood(Coordinate coordinate) {
-            super(coordinate, Color.MAGENTA);
-        }
+    /**
+     * Generates a random type for the food.
+     *
+     * @return a randomly selected FoodType.
+     */
+    private FoodType generateRandomFoodType() {
+        int randomIndex = new Random().nextInt(FoodType.values().length);
+        return FoodType.values()[randomIndex];
+    }
 
-        @Override
-        public void move() {
-            // Violet food runs away from the snake's head, implement movement logic here
-        }
+    /**
+     * Respawns the food at a random position and with a random type.
+     *
+     * @param mapWidth  the width of the game map.
+     * @param mapHeight the height of the game map.
+     */
+    public void respawn(int mapWidth, int mapHeight) {
+        type = generateRandomFoodType();
+        position = generateRandomPosition(mapWidth, mapHeight);
+        setColor();
+    }
+
+    /**
+     * Draws the food on the graphics object.
+     *
+     * @param g2d the Graphics2D object to draw on.
+     */
+    public void draw(Graphics2D g2d) {
+        g2d.setColor(color);
+        g2d.fillRect(position.getX(), position.getY(), FOOD_SIZE, FOOD_SIZE);
+    }
+
+    /**
+     * Returns the position of the food.
+     *
+     * @return the position of the food as a Point.
+     */
+    public Point getPosition() {
+        return position;
+    }
+
+    /**
+     * Returns the size of the food.
+     *
+     * @return the size of the food.
+     */
+    public int getSize() {
+        return FOOD_SIZE;
+    }
+
+    /**
+     * Returns the type of the food.
+     *
+     * @return the type of the food as a FoodType.
+     */
+    public FoodType getType() {
+        return type;
     }
 }

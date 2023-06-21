@@ -1,13 +1,40 @@
 package com.snakegame;
 
-import javax.swing.SwingUtilities;
+import java.awt.*;
+import javax.swing.*;
 
-public class Main {
+/**
+ * The Main class is responsible for starting the Snake game.
+ * It creates the main window and initializes the game.
+ */
+public class Main extends JFrame {
+    public Main() {
+        initUI();
+    }
+
+    /**
+     * Initializes the user interface of the game.
+     */
+    private void initUI() {
+        add(new Game());
+
+        setTitle("Snake");
+        setSize(800, 800);
+
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    /**
+     * The entry point of the program.
+     *
+     * @param args the command line arguments.
+     */
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new GameWindow();
-            }
+        EventQueue.invokeLater(() -> {
+            Main ex = new Main();
+            ex.setVisible(true);
         });
     }
 }
