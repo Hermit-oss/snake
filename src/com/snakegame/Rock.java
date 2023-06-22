@@ -8,7 +8,7 @@ import java.awt.*;
  * They have a position and size.
  */
 class Rock {
-    private Point[] rocks;
+    public Point[] rocks;
     private static final int ROCK_SIZE = 10;
 
     /**
@@ -18,9 +18,9 @@ class Rock {
      * @param mapWidth  the width of the game map.
      * @param mapHeight the height of the game map.
      */
-    public Rock(int numRocks, int mapWidth, int mapHeight) {
+    public Rock(int numRocks, int mapWidth, int mapHeight, int border) {
         rocks = new Point[numRocks];
-        generateRocks(numRocks, mapWidth, mapHeight);
+        generateRocks(numRocks, mapWidth, mapHeight, border);
     }
 
     /**
@@ -30,10 +30,10 @@ class Rock {
      * @param mapWidth  the width of the game map.
      * @param mapHeight the height of the game map.
      */
-    private void generateRocks(int numRocks, int mapWidth, int mapHeight) {
+    private void generateRocks(int numRocks, int mapWidth, int mapHeight, int border) {
         for (int i = 0; i < numRocks; i++) {
-            int x = (int) (Math.random() * (mapWidth - ROCK_SIZE));
-            int y = (int) (Math.random() * (mapHeight - ROCK_SIZE));
+            int x = ((int) (mapWidth * Math.random() + border - ROCK_SIZE) / 10) * 10;
+            int y = ((int) (mapHeight * Math.random() + border - ROCK_SIZE) / 10) * 10;
             rocks[i] = new Point(x, y);
         }
     }
@@ -58,7 +58,7 @@ class Rock {
      */
     public boolean collidesWith(Point point) {
         for (Point rock : rocks) {
-            if (point.intersects(rock, ROCK_SIZE)) {
+            if (point.intersects(rock, ROCK_SIZE - 1)) {
                 return true;
             }
         }

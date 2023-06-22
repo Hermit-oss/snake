@@ -17,9 +17,8 @@ public class Main extends JFrame {
      */
     private void initUI() {
         add(new Game());
-
         setTitle("Snake");
-        setSize(800, 800);
+        setSize(540, 580);
 
         setLocationRelativeTo(null);
         setResizable(false);

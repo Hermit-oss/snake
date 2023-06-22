@@ -31,8 +31,11 @@ class Game extends JPanel {
     private static final Font FONT_M_ITALIC = new Font("MV Boli", Font.ITALIC, 24);
     private static final Font FONT_L = new Font("MV Boli", Font.PLAIN, 84);
     private static final Font FONT_XL = new Font("MV Boli", Font.PLAIN, 150);
-    private static final int WIDTH = 720;
-    private static final int HEIGHT = 720;
+    
+    public static final int BORDER = 40;
+    public static final int WIDTH = 480;
+    public static final int HEIGHT = 480;
+
     private static final int DELAY = 50;
 
     /**
@@ -46,11 +49,11 @@ class Game extends JPanel {
 
         // Initialize the list of foods and create a new food instance
         foods = new ArrayList<>();
-        food = new Food(WIDTH, HEIGHT);
+        food = new Food(WIDTH, HEIGHT, BORDER);
         foods.add(food);
 
         // Create the rock and snake instances
-        rock = new Rock(15, WIDTH, HEIGHT);
+        rock = new Rock(15, WIDTH, HEIGHT, BORDER);
         snake = new Snake(WIDTH / 2, HEIGHT / 2);
 
         // Set the initial game status
@@ -81,38 +84,92 @@ class Game extends JPanel {
 
         // Update the behavior of each food
         for (Food food : foods) {
+            int foodXPos = food.getPosition().getX();
+            int foodYPos = food.getPosition().getY();
+            int playerXPos = snake.getHead().getX();
+            int playerYPos = snake.getHead().getY();
+            int dx = 0, dy = 0;
+            int[][] options = { // default, xright, xleft, ydown, yup
+                {0, 0, /* */ 10, 0, /* */ -10, 0, /* */ 0, 10, /* */ 0, -10}, // 0 default
+                {0, 0, /* */ 10, 0, /* */  10, 0, /* */ 0, 10, /* */ 0, -10}, // 1
+                {0, 0, /* */ 10, 0, /* */ -10, 0, /* */ 0, 10, /* */ 0,  10}, // 2
+                {0, 0, /* */ 10, 0, /* */  10, 0, /* */ 0, 10, /* */ 0,  10}, // 3
+                {0, 0, /* */-10, 0, /* */ -10, 0, /* */ 0, 10, /* */ 0, -10}, // 4
+                {0, 0, /* */ 10, 0, /* */ -10, 0, /* */ 0,-10, /* */ 0, -10}, // 5
+                {0, 0, /* */-10, 0, /* */ -10, 0, /* */ 0,-10, /* */ 0, -10}, // 6
+                {0, 0, /* */-10, 0, /* */ -10, 0, /* */ 0, 10, /* */ 0,  10}, // 7 upper-right
+                {0, 0, /* */ 10, 0, /* */  10, 0, /* */ 0,-10, /* */ 0, -10}  // 8 lower-left
+            };
             switch (food.getType()) {
                 case RED:
                     // Red food behavior (stays in one place)
                     break;
                 case YELLOW:
                     // Yellow food behavior (moves chaotically)
-                    int dx = (int) (Math.random() * 10 - 3);
-                    int dy = (int) (Math.random() * 10 - 3);
-                    food.getPosition().move(dx, dy);
+                    int validPosYellow = checkFoodPosition(foodXPos, foodYPos);
+                    int option = (int) (Math.random() * 4);
+                    dx = options[validPosYellow][option * 2];
+                    dy = options[validPosYellow][option * 2 + 1];
                     break;
                 case MAGENTA:
                     // Purple food behavior (runs away from the player)
-                    int playerX = snake.getHead().getX();
-                    int playerY = snake.getHead().getY();
-                    int foodX = food.getPosition().getX();
-                    int foodY = food.getPosition().getY();
-                    int ddx = (foodX < playerX) ? 1 : -3;
-                    int ddy = (foodY < playerY) ? 1 : -3;
-                    food.getPosition().move(ddx, ddy);
+                    int validPosMagenta = checkFoodPosition(foodXPos, foodYPos);
+                    int distanceX = foodXPos - playerXPos;
+                    int distanceY = foodYPos - playerYPos;
+                    
+                    if (distanceX < 0 && validPosMagenta != 1 && validPosMagenta != 3 && validPosMagenta != 8) {
+                        dx = -10; // Move to the left
+                    } else if (distanceX > 0 && validPosMagenta != 4 && validPosMagenta != 6 && validPosMagenta != 7) {
+                        dx = 10; // Move to the right
+                    }
+                    
+                    if (distanceY < 0 && validPosMagenta != 2 && validPosMagenta != 3 && validPosMagenta != 7) {
+                        dy = -10; // Move up
+                    } else if (distanceY > 0 && validPosMagenta != 5 && validPosMagenta != 6 && validPosMagenta != 8) {
+                        dy = 10; // Move down
+                    }
                     break;
             }
-        }
+            food.getPosition().move(dx, dy);
 
-        // Check if the snake has collided with the food
-        if (food.getPosition().intersects(snake.getHead(), food.getSize())) {
-            snake.addTail();
-            food.respawn(WIDTH, HEIGHT); // Respawn the food
-            points++;
-        }
+            // Check if the snake has collided with the food
+            if (food.getPosition().intersects(snake.getHead(), food.getSize() - 1)) {
+                snake.addTail();
+                food.respawn(WIDTH, HEIGHT, BORDER); // Respawn the food
+                points++;
+            }
 
-        // Check if the game is over
-        checkForGameOver();
+            // Check if the game is over
+            checkForGameOver();
+        }
+    }
+
+    private int checkFoodPosition(int pos_x, int pos_y) {
+        if (pos_x <= BORDER && pos_y <= BORDER) { // Out of bounds upper-left
+            return 3;
+        }
+        if (pos_x >= WIDTH + BORDER - food.getSize() && pos_y <= BORDER) { // Out of bounds upper-right
+            return 7;
+        }
+        if (pos_x <= BORDER && pos_y >= HEIGHT + BORDER - food.getSize()) { // Out of bounds lower-left
+            return 8;
+        }
+        if (pos_x >= WIDTH + BORDER - food.getSize() && pos_y >= HEIGHT + BORDER - food.getSize()) { // Out of bounds lower-right
+            return 6;
+        }
+        if (pos_x <= BORDER) { // Out of bounds to the left
+            return 1;
+        }
+        if (pos_y <= BORDER) { // Out of bounds up
+            return 2;
+        }
+        if (pos_x >= WIDTH + BORDER - food.getSize()) { // Out of bounds to the right
+            return 4;
+        }
+        if (pos_y >= HEIGHT + BORDER - food.getSize()) { // Out of bounds down
+            return 5;
+        }
+        return 0; // In map boundaries
     }
 
     /**
@@ -120,7 +177,7 @@ class Game extends JPanel {
      */
     private void reset() {
         points = 0;
-        food.respawn(WIDTH, HEIGHT);
+        food.respawn(WIDTH, HEIGHT, BORDER);
         snake = new Snake(WIDTH / 2, HEIGHT / 2);
         setStatus(GameStatus.RUNNING);
     }
@@ -163,10 +220,10 @@ class Game extends JPanel {
      */
     private void checkForGameOver() {
         Point head = snake.getHead();
-        boolean hitBoundary = head.getX() <= 20
-                || head.getX() >= WIDTH + 10
-                || head.getY() <= 40
-                || head.getY() >= HEIGHT + 30;
+        boolean hitBoundary = head.getX() <= BORDER - 5
+                || head.getX() >= WIDTH + BORDER - 5
+                || head.getY() <= BORDER - 5
+                || head.getY() >= HEIGHT + BORDER - 5;
 
         boolean ateItself = false;
         boolean hitRock = rock.collidesWith(head);
@@ -220,17 +277,6 @@ class Game extends JPanel {
         g2d.drawString("BEST: " + String.format("%02d", best), 630, 30);
 
         for (Food food : foods) {
-            switch (food.getType()) {
-                case RED:
-                    g2d.setColor(Color.RED);
-                    break;
-                case YELLOW:
-                    g2d.setColor(Color.YELLOW);
-                    break;
-                case MAGENTA:
-                    g2d.setColor(Color.MAGENTA);
-                    break;
-            }
             g2d.fillRect(food.getPosition().getX(), food.getPosition().getY(), food.getSize(), food.getSize());
         }
 
@@ -253,7 +299,7 @@ class Game extends JPanel {
 
         g2d.setColor(Color.RED);
         g2d.setStroke(new BasicStroke(4));
-        g2d.drawRect(20, 40, WIDTH, HEIGHT);
+        g2d.drawRect(BORDER, BORDER, WIDTH, HEIGHT);
     }
 
     /**

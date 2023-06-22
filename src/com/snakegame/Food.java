@@ -25,8 +25,8 @@ class Food {
      * @param mapWidth  the width of the game map.
      * @param mapHeight the height of the game map.
      */
-    public Food(int mapWidth, int mapHeight) {
-        position = generateRandomPosition(mapWidth, mapHeight);
+    public Food(int mapWidth, int mapHeight, int border) {
+        position = generateRandomPosition(mapWidth, mapHeight, border);
         type = generateRandomFoodType();
         setColor();
     }
@@ -38,9 +38,9 @@ class Food {
      * @param mapHeight the height of the game map.
      * @return a randomly generated Point representing the position.
      */
-    private Point generateRandomPosition(int mapWidth, int mapHeight) {
-        int x = (int) (Math.random() * (mapWidth - FOOD_SIZE));
-        int y = (int) (Math.random() * (mapHeight - FOOD_SIZE));
+    private Point generateRandomPosition(int mapWidth, int mapHeight, int border) {
+        int x = ((int) (mapWidth * Math.random() + border - FOOD_SIZE) / 10) * 10;
+        int y = ((int) (mapHeight * Math.random() + border - FOOD_SIZE) / 10) * 10;
         return new Point(x, y);
     }
 
@@ -75,9 +75,9 @@ class Food {
      * @param mapWidth  the width of the game map.
      * @param mapHeight the height of the game map.
      */
-    public void respawn(int mapWidth, int mapHeight) {
+    public void respawn(int mapWidth, int mapHeight, int border) {
         type = generateRandomFoodType();
-        position = generateRandomPosition(mapWidth, mapHeight);
+        position = generateRandomPosition(mapWidth, mapHeight, border);
         setColor();
     }
 
